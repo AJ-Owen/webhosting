@@ -1,0 +1,29 @@
+services:
+  pdf_tool:
+    image: stirlingtools/stirling-pdf:latest
+    ports:
+      - '127.0.0.1:8080:8080'
+    volumes:
+      - ./data/trainingData:/usr/share/tessdata # Required for extra OCR languages
+      - ./data/extraConfigs:/configs
+      - ./data/extraConfigs:/configs
+      - ./data/customFiles:/customFiles/
+      - ./data/logs:/logs/
+      - ./data/pipeline:/pipeline/
+    environment:
+      - UI_APP_NAME=DDA PDF tools
+      - UI_HOME_DESCRIPTION=Hosted in the cloud for your doggy convenience
+      - UI_APP_NAVBAR_NAME=DDA PDF
+      - DOCKER_ENABLE_SECURITY=true
+      - SECURITY_ENABLE_LOGIN=true
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
+      - LANGS=en_GB
+      - SYSTEM_ROOTURIPATH=/pdf
+      - SECURITY_INITIALLOGIN_USERNAME=josh
+      - SECURITY_INITIALLOGIN_PASSWORD=123
+    networks:
+      - frontend
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true

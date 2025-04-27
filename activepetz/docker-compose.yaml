@@ -1,0 +1,14 @@
+services:
+  activepetz:
+    image: ghcr.io/aj-owen/activepetz:latest
+    container_name: activepetz
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: unless-stopped
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true

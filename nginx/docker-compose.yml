@@ -1,0 +1,23 @@
+services:
+  nginx:
+    restart: always
+    image: nginx:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default:/etc/nginx/html/default
+      - /var/log/nginx-docker:/var/log/nginx
+      - /etc/nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - proxynet
+
+networks:
+  proxynet:
+    name: docker_proxy_network
+    driver: bridge
+      #driver_opts:
+      #com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
