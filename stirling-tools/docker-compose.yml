@@ -1,12 +1,10 @@
 services:
   pdf_tool:
     image: stirlingtools/stirling-pdf:latest
-    ports:
-      - '127.0.0.1:8080:8080'
+    container_name: pdf_tool
     volumes:
       - ./data/trainingData:/usr/share/tessdata # Required for extra OCR languages
-      - ./data/extraConfigs:/configs
-      - ./data/extraConfigs:/configs
+      - ./data/configs:/configs
       - ./data/customFiles:/customFiles/
       - ./data/logs:/logs/
       - ./data/pipeline:/pipeline/
@@ -18,11 +16,13 @@ services:
       - SECURITY_ENABLE_LOGIN=true
       - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
       - LANGS=en_GB
-      #- SYSTEM_ROOTURIPATH=/pdf
       - SECURITY_INITIALLOGIN_USERNAME=josh
       - SECURITY_INITIALLOGIN_PASSWORD=123
+      # - SYSTEM_ROOTURIPATH=/pdf
+    restart: unless-stopped
     networks:
       - frontend
+
 networks:
   frontend:
     name: docker_proxy_network
