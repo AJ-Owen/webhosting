@@ -1,0 +1,26 @@
+services:
+  factorio:
+    image: factoriotools/factorio
+    container_name: factorio-server
+    ports:
+    # Game port
+     - "34197:34197/udp"
+    # RCON - remote admin management
+    #- "27015:27015/tcp" 
+    volumes:
+     - ./data:/factorio
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: 2.5
+          memory: 3.5G
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true
