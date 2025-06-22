@@ -1,6 +1,6 @@
 services:
   factorio:
-    image: factoriotools/factorio
+    image: factoriotools/factorio:stable
     container_name: factorio-server
     ports:
     # Game port
