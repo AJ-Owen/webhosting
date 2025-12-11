@@ -5,6 +5,6 @@ services:
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --cleanup --label-enable --interval 60
+    command: --cleanup --label-enable --interval 600
     environment:
       - TZ=Europe/London
