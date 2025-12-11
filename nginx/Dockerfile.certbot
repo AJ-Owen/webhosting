@@ -1,0 +1,6 @@
+FROM certbot/certbot:latest
+
+# Install Porkbun DNS plugin
+RUN pip install --no-cache-dir certbot-dns-porkbun
+
+ENTRYPOINT [ "certbot" ]
