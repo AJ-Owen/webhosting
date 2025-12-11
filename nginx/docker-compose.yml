@@ -1,34 +1,44 @@
 services:
-  nginx:
-    restart: always
-    image: nginx:latest
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./default:/etc/nginx/html/default
-      - /var/log/nginx-docker:/var/log/nginx
-      #- /etc/nginx/certs:/etc/nginx/certs:ro
-      - ./data/porkbun-certs:/etc/nginx/certs:ro
-      - ./data/certbot/conf:/etc/letsencrypt:ro
-      - ./data/certbot/www:/var/www/certbot:ro
-    networks:
-      - proxynet
+    nginx:
+        restart: always
+        image: nginx:latest
+        labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+        ports:
+            - 80:80
+            - 443:443
+        env_file: .env
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - ./data/default:/etc/nginx/html/default
+            - /var/log/nginx-docker:/var/log/nginx
+            #- /etc/nginx/certs:/etc/nginx/certs:ro
+            - ./data/porkbun-certs:/etc/nginx/certs:ro
+            - ./data/certbot/conf:/etc/letsencrypt:ro
+            - ./data/certbot/www:/var/www/certbot:ro
+        networks:
+            - proxynet
 
-  certbot:
-    image: certbot/certbot:latest
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt:rw
-      - ./data/certbot/www:/var/www/certbot:rw
-    networks:
-      - proxynet
-
+    certbot:
+        image: certbot-local
+        build:
+            context: .
+            dockerfile: Dockerfile.certbot
+        restart: always
+        depends_on:
+          - nginx
+        volumes:
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        command: >
+                -c "
+                certbot renew --webroot -w /var/www/certbot &&
+                sleep 12h
+                "
+        networks:
+            - proxynet
 networks:
-  proxynet:
-    name: docker_proxy_network
-    driver: bridge
+    proxynet:
+        name: docker_proxy_network
+        driver: bridge
