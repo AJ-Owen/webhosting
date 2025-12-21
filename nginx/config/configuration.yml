@@ -1,0 +1,62 @@
+---
+theme: dark
+
+server:
+  address: tcp://0.0.0.0:9091
+
+log:
+  level: info
+  format: text
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: auth.joshowen.uk
+      policy: bypass
+    - domain: "*.joshowen.uk"
+      policy: two_factor
+
+totp:
+  issuer: 'joshowen.uk'
+  algorithm: 'sha256'
+  digits: 6
+  period: 30
+  skew: 1
+  secret_size: 32
+  allowed_algorithms:
+    - 'SHA256'
+  allowed_digits:
+    - 6
+  allowed_periods:
+    - 30
+  disable_reuse_security_policy: false
+
+session:
+  name: authelia_session
+  expiration: 12h
+  inactivity: 90m
+  cookies:
+    - domain: joshowen.uk
+      authelia_url: https://auth.joshowen.uk
+      name: authelia_session
+
+regulation:
+  max_retries: 3
+  find_time: 2m
+  ban_time: 60m
+
+storage:
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt
+
+identity_validation:
+  reset_password:
+    jwt_secret: /secrets/JWT_SECRET

@@ -24,20 +24,34 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.certbot
-        restart: always
+        restart: no
         depends_on:
           - nginx
         volumes:
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
             - /var/run/docker.sock:/var/run/docker.sock:ro
-        command: >
-                -c "
-                certbot renew --webroot -w /var/www/certbot &&
-                sleep 12h
-                "
+        command: ["renew", "--webroot", "-w", "/var/www/certbot"]
         networks:
             - proxynet
+
+    authelia:
+        container_name: authelia
+        image: authelia/authelia
+        restart: unless-stopped
+        labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+        volumes:
+            - ./config:/config
+            - ./data/authelia/secrets:/secrets
+        environment:
+            TZ: 'Europe/London'
+            AUTHELIA_JWT_SECRET_FILE: /secrets/JWT_SECRET
+            AUTHELIA_SESSION_SECRET_FILE: /secrets/SESSION_SECRET
+            AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/STORAGE_ENCRYPTION_KEY
+        networks:
+            - proxynet
+
 networks:
     proxynet:
         name: docker_proxy_network
