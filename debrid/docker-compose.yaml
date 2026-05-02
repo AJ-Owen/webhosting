@@ -1,0 +1,25 @@
+---
+version: '3.3'
+services:
+  rdtclient:
+    image: rogerfar/rdtclient
+    container_name: rdtclient
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ./data/db:/data/db
+      - ./data/downloads:/data/downloads
+    logging:
+       driver: json-file
+       options:
+          max-size: 10m
+    restart: unless-stopped
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true
