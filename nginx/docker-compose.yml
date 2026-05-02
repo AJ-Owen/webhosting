@@ -44,6 +44,7 @@ services:
         volumes:
             - ./config:/config
             - ./data/authelia/secrets:/secrets
+            - /var/log/authelia:/var/log/authelia
         environment:
             TZ: 'Europe/London'
             AUTHELIA_JWT_SECRET_FILE: /secrets/JWT_SECRET
