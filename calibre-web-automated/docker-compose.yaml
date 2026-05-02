@@ -3,6 +3,8 @@ services:
   calibre-web-automated:
     image: crocodilestick/calibre-web-automated:latest
     container_name: calibre-web-automated
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       - PUID=1000
       - PGID=1000
@@ -10,7 +12,7 @@ services:
       - NETWORK_SHARE_MODE=false
     env_file: ".env"
     volumes:
-      - ./data/config:/config 
+      - ./data/config:/config
       - ./data/ingest:/cwa-book-ingest
       - ./data/calibre-library:/calibre-library
     ports:
@@ -22,6 +24,8 @@ services:
   calibre-web-automated-book-downloader:
     image: ghcr.io/calibrain/calibre-web-automated-book-downloader:latest
     container_name: calibre-web-automated-book-downloader
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       FLASK_PORT: 8084
       LOG_LEVEL: info
