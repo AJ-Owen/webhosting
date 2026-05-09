@@ -10,5 +10,6 @@ docker compose run certbot certonly --webroot -w /var/www/certbot \
   -d docs.joshowen.uk \
   -d factorio.joshowen.uk \
   -d joshowen.uk \
+  -d obsidian.joshowen.uk \
   -d pdf.joshowen.uk \
   -d tools.joshowen.uk \
