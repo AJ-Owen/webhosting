@@ -3,6 +3,7 @@
 docker compose run certbot certonly --webroot -w /var/www/certbot \
   -d assistant.joshowen.uk \
   -d auth.joshowen.uk \
+  -d beszel.joshowen.uk \
   -d books-request.joshowen.uk \
   -d books.joshowen.uk \
   -d budget.joshowen.uk \
