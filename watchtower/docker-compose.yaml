@@ -7,6 +7,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /home/josh/.docker/config.json:/config.json:ro
     command: --cleanup --label-enable --interval 3600
+    env_file: .env
     environment:
       - TZ=Europe/London
-      - WATCHTOWER_RUN_ONCE=true
+      - WATCHTOWER_NOTIFICATION_SKIP_TITLE=True
