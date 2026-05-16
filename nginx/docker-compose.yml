@@ -18,7 +18,7 @@ services:
             - ./data/certbot/conf:/etc/letsencrypt:ro
             - ./data/certbot/www:/var/www/certbot:ro
         networks:
-            - proxynet
+            - frontend
 
     certbot:
         image: certbot-local
@@ -34,7 +34,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock:ro
         command: ["renew", "--webroot", "-w", "/var/www/certbot"]
         networks:
-            - proxynet
+            - frontend
 
     authelia:
         container_name: authelia
@@ -54,9 +54,9 @@ services:
             AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/STORAGE_ENCRYPTION_KEY
             AUTHELIA_NOTIFIER_SMTP_PASSWORD: ${GMX_APP_PASSWORD}
         networks:
-            - proxynet
+            - frontend
 
 networks:
-    proxynet:
+    frontend:
         name: docker_proxy_network
-        driver: bridge
+        external: true
