@@ -22,6 +22,7 @@ services:
 
     certbot:
         image: certbot-local
+        container_name: certbot
         build:
             context: .
             dockerfile: Dockerfile.certbot
