@@ -1,0 +1,16 @@
+# ntfy server configuration
+# Full docs: https://docs.ntfy.sh/config/
+
+base-url: https://ntfy.joshowen.uk
+listen-http: 0.0.0.0:80
+
+# Cache settings (cache messages briefly so subscribers receive them)
+cache-file: /var/cache/ntfy/cache.db
+cache-duration: 12h
+
+behind-proxy: true
+proxy-forwarded-header: "X-Forwarded-For"
+
+# Native auth — Authelia is bypassed for this subdomain
+auth-file: /var/cache/ntfy/auth.db
+auth-default-access: deny-all
