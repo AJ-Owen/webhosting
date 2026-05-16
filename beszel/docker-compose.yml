@@ -1,0 +1,31 @@
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel
+    restart: unless-stopped
+    volumes:
+      - ./data/hub:/beszel_data
+    networks:
+      - frontend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Hub listens on 8090 internally; nginx reverse-proxies to it.
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data/agent:/var/lib/beszel-agent
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: 45876
+      # Public key from the hub — populated after first hub startup
+      KEY: "${BESZEL_AGENT_KEY:-}"
+      HUB_URL: https://beszel.joshowen.uk
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true
