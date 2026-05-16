@@ -9,8 +9,8 @@ services:
       # - ACTUAL_HTTPS_KEY=/data/selfhost.key
       # - ACTUAL_HTTPS_CERT=/data/selfhost.crt
       # - ACTUAL_PORT=5006
-      # - ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB=20
-      # - ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB=50
+       - ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB=100
+       - ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB=200
        - ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB=100
     volumes:
       - ./data:/data
@@ -24,6 +24,16 @@ services:
     restart: unless-stopped
     networks:
       - frontend
+      - actual-network
+
+  actual-auto-sync-server:
+    image: seriouslag/actual-auto-sync:latest
+    container_name: actual-sync
+    env_file: .env
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
       - actual-network
 
 networks:
