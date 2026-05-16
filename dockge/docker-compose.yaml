@@ -1,0 +1,22 @@
+services:
+  dockge:
+    image: louislam/dockge:1
+    container_name: dockge
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      # Path INSIDE the container must equal the path on the host so the
+      # compose files Dockge writes contain host-valid bind-mount paths.
+      DOCKGE_STACKS_DIR: /home/josh/repos/apps
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
+      - /home/josh/repos/apps:/home/josh/repos/apps
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true
