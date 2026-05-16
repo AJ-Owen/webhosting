@@ -9,6 +9,7 @@ docker compose run certbot certonly --webroot -w /var/www/certbot \
   -d budget.joshowen.uk \
   -d debrid.joshowen.uk \
   -d docs.joshowen.uk \
+  -d dockge.joshowen.uk \
   -d factorio.joshowen.uk \
   -d joshowen.uk \
   -d ntfy.joshowen.uk \
