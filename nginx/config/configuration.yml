@@ -13,11 +13,16 @@ log:
 authentication_backend:
   file:
     path: /config/users_database.yml
+    search:
+      email: true             # allow login/reset via email address
+      case_insensitive: true  # accept Katie, KATIE, katie equally
 
 access_control:
   default_policy: deny
   rules:
     - domain: auth.joshowen.uk
+      policy: bypass
+    - domain: ntfy.joshowen.uk
       policy: bypass
     - domain: "*.joshowen.uk"
       policy: two_factor
@@ -56,9 +61,13 @@ storage:
     path: /config/db.sqlite3
 
 notifier:
-  filesystem:
-    filename: /config/notification.txt
+  smtp:
+    address: mail.gmx.com:587
+    sender: "Authelia <cal.libre@gmx.com>"
+    username: cal.libre@gmx.com
+    # password is set via AUTHELIA_NOTIFIER_SMTP_PASSWORD env var in docker-compose.yml
+    disable_require_tls: false
 
-identity_validation:
-  reset_password:
-    jwt_secret: /secrets/JWT_SECRET
+# jwt_secret is loaded from /secrets/JWT_SECRET via
+# AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE env var
+# (see docker-compose.yml)
