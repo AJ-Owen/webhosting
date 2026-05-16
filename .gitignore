@@ -3,3 +3,4 @@
 *.sqlite3
 **/users_database.yml
 **/users_database.yaml
+calibre-web-automated/hooks/*.log
