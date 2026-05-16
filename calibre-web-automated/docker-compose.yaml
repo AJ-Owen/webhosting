@@ -15,8 +15,6 @@ services:
       - ./data/config:/config
       - ./data/ingest:/cwa-book-ingest
       - ./data/calibre-library:/calibre-library
-    ports:
-      - 8083:8083
     restart: unless-stopped
     networks:
       - frontend
@@ -28,6 +26,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     environment:
       FLASK_PORT: 8084
+      INGEST_DIR: /cwa-book-ingest
       LOG_LEVEL: info
       BOOK_LANGUAGE: en
       USE_BOOK_TITLE: true
@@ -35,17 +34,24 @@ services:
       APP_ENV: prod
       UID: 1000
       GID: 100
-      CWA_DB_PATH: /auth/app.db
+      CWA_DB_PATH: /cwa-config/app.db
       # Queue management settings
       MAX_CONCURRENT_DOWNLOADS: 3
       DOWNLOAD_PROGRESS_UPDATE_INTERVAL: 5
+      # Per-requester tag + send-to-kindle hook
+      CUSTOM_SCRIPT: /config/hooks/notify.py
+      CUSTOM_SCRIPT_JSON_PAYLOAD: "true"
     env_file: ".env"
-    ports:
-      - 8084:8084
     restart: unless-stopped
     volumes:
       - ./data/ingest:/cwa-book-ingest
-      - ./data/config/app.db:/auth/app.db:ro
+      - ./data/shelfmark-config:/config
+      - ./hooks:/config/hooks
+      # Mount the CWA config dir (not just app.db) so SQLite WAL files
+      # are visible — flag updates must go through the same WAL the
+      # CWA process reads from.
+      - ./data/config:/cwa-config
+      - ./data/calibre-library:/calibre-library
     networks:
       - frontend
 
