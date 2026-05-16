@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-docker compose run certbot certonly --webroot -w /var/www/certbot \
+docker compose run --rm --no-deps certbot certonly --webroot -w /var/www/certbot \
   -d assistant.joshowen.uk \
   -d auth.joshowen.uk \
   -d beszel.joshowen.uk \
