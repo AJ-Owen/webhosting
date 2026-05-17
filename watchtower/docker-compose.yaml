@@ -11,3 +11,7 @@ services:
     environment:
       - TZ=Europe/London
       - WATCHTOWER_NOTIFICATION_SKIP_TITLE=True
+      - WATCHTOWER_WARN_ON_HEAD_FAILURE=never
+      #- WATCHTOWER_RUN_ONCE=True
+      - WATCHTOWER_NO_STARTUP_MESSAGE=True
+      - WATCHTOWER_NOTIFICATION_LOG_STDOUT=True
