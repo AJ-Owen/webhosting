@@ -11,6 +11,7 @@ services:
         env_file: .env
         volumes:
             - ./nginx.conf:/etc/nginx/nginx.conf
+            - ./snippets:/etc/nginx/snippets:ro
             - ./data/default:/etc/nginx/html/default
             - /var/log/nginx-docker:/var/log/nginx
             #- /etc/nginx/certs:/etc/nginx/certs:ro
