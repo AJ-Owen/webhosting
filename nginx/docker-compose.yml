@@ -9,9 +9,9 @@ services:
             - 80:80
             - 443:443
         env_file: .env
+        command: ["nginx", "-c", "/etc/nginx/nginx.d/nginx.conf", "-g", "daemon off;"]
         volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-            - ./snippets:/etc/nginx/snippets:ro
+            - ./nginx.d:/etc/nginx/nginx.d:ro
             - ./data/default:/etc/nginx/html/default
             - /var/log/nginx-docker:/var/log/nginx
             #- /etc/nginx/certs:/etc/nginx/certs:ro
