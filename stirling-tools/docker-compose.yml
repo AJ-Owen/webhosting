@@ -20,6 +20,7 @@ services:
       - SECURITY_INITIALLOGIN_PASSWORD=123
       # - SYSTEM_ROOTURIPATH=/pdf
     restart: unless-stopped
+    mem_limit: 512m # JVM MaxRAMPercentage=75 -> ~384MB heap cap (was unbounded vs full host RAM)
     networks:
       - frontend
 
