@@ -1,0 +1,69 @@
+services:
+  # Static Excalidraw SPA (nginx). The official image bakes its backend URLs
+  # into the JS bundle at BUILD time:
+  #   - collab/room server  -> https://oss-collab.excalidraw.com
+  #   - scene storage (GET)  -> https://json.excalidraw.com/api/v2/
+  #   - scene storage (POST) -> https://json.excalidraw.com/api/v2/post/
+  # We don't rebuild; we sed-patch the built assets on every container start
+  # so collaboration and "save to link" persistence point at our own stack.
+  # Everything lives under one domain (draw.joshowen.uk): nginx routes
+  # /socket.io/ to excalidraw-room and /api/v2/ to excalidraw-storage.
+  # The patch re-runs each start, so Watchtower image updates are picked up.
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    container_name: excalidraw
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      # Public HTTPS origin of this whole stack (browser talks to it directly).
+      VITE_APP_WS_SERVER_URL: https://draw.joshowen.uk
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        WS="$${VITE_APP_WS_SERVER_URL}"
+        SCENES="$${WS}/api/v2/scenes/"
+        echo "[excalidraw] collab -> $${WS}   scenes -> $${SCENES}"
+        find /usr/share/nginx/html/assets -name '*.js' -exec sed -i \
+          -e "s|https://oss-collab\.excalidraw\.com|$${WS}|g" \
+          -e "s|https://json\.excalidraw\.com/api/v2/post/|$${SCENES}|g" \
+          -e "s|https://json\.excalidraw\.com/api/v2/|$${SCENES}|g" \
+          {} +
+        exec /docker-entrypoint.sh nginx -g 'daemon off;'
+    networks:
+      - frontend
+
+  # Socket.IO relay for real-time collaboration. Ephemeral / in-memory: it only
+  # relays end-to-end-encrypted diffs between connected clients (the room key
+  # lives in the browser URL fragment and never reaches the server).
+  excalidraw-room:
+    image: excalidraw/excalidraw-room:latest
+    container_name: excalidraw-room
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - frontend
+
+  # Persistent scene storage (the "save to shareable link" feature). Keyv-backed;
+  # we use SQLite so the whole store is a single file on the ./data volume.
+  # Swap STORAGE_URI to postgres://... later to move onto a shared DB.
+  excalidraw-storage:
+    image: kiliandeca/excalidraw-storage-backend:latest
+    container_name: excalidraw-storage
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      PORT: "8080"
+      STORAGE_URI: sqlite:///data/excalidraw.sqlite
+    volumes:
+      - ./data:/data
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true

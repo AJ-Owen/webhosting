@@ -11,6 +11,7 @@ docker compose run --rm --no-deps certbot certonly --webroot -w /var/www/certbot
   -d debrid.joshowen.uk \
   -d docs.joshowen.uk \
   -d dockge.joshowen.uk \
+  -d draw.joshowen.uk \
   -d factorio.joshowen.uk \
   -d ha.joshowen.uk \
   -d joshowen.uk \
