@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 docker compose run --rm --no-deps certbot certonly --webroot -w /var/www/certbot \
+  --cert-name joshowen.uk-0001 --expand --non-interactive \
   -d assistant.joshowen.uk \
   -d auth.joshowen.uk \
   -d beszel.joshowen.uk \
