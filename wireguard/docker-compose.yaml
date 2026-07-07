@@ -31,6 +31,10 @@ services:
   ha-forward:
     container_name: ha-forward
     image: alpine/socat:latest
+    # Watchtower must manage this too: it shares wireguard's network
+    # namespace, so it has to be recreated whenever wireguard is.
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     network_mode: "service:wireguard"
     command: TCP-LISTEN:8123,fork,reuseaddr TCP:${HA_LAN_IP}:8123
     depends_on:
