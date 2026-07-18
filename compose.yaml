@@ -6,6 +6,7 @@ include:
   - ntfy/docker-compose.yml
   - beszel/docker-compose.yml
   - dockge/docker-compose.yaml
+  - uptime-kuma/docker-compose.yaml
   - path: wireguard/docker-compose.yaml
     env_file: wireguard/.env
 
