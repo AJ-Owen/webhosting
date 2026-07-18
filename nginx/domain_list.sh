@@ -19,3 +19,4 @@ docker compose run --rm --no-deps certbot certonly --webroot -w /var/www/certbot
   -d obsidian.joshowen.uk \
   -d pdf.joshowen.uk \
   -d tools.joshowen.uk \
+  -d uptime.joshowen.uk \

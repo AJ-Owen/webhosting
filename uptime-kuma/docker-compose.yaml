@@ -1,0 +1,17 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - frontend
+    # UI listens on 3001 internally; nginx reverse-proxies to it.
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true
