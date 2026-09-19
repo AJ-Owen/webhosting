@@ -16,8 +16,12 @@ services:
       - SECURITY_ENABLE_LOGIN=true
       - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
       - LANGS=en_GB
-      - SECURITY_INITIALLOGIN_USERNAME=josh
-      - SECURITY_INITIALLOGIN_PASSWORD=123
+      # SECURITY_INITIALLOGIN_{USERNAME,PASSWORD} removed: they only seed the
+      # H2 user DB on FIRST run, so they did nothing once data/configs/
+      # stirling-pdf-DB-*.mv.db existed -- they just left a stale credential in
+      # git history. Stirling keeps its own accounts (no Authelia SSO support),
+      # managed at pdf.joshowen.uk/account. If the H2 DB is ever wiped, set
+      # them temporarily via .env to seed a new admin, then remove them again.
       # - SYSTEM_ROOTURIPATH=/pdf
     restart: unless-stopped
     mem_limit: 512m # JVM MaxRAMPercentage=75 -> ~384MB heap cap (was unbounded vs full host RAM)
