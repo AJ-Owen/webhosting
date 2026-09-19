@@ -19,11 +19,49 @@ authentication_backend:
 
 access_control:
   default_policy: deny
+  # Rules are FIRST MATCH WINS. Anything scoped to specific people must appear
+  # ABOVE the "*.joshowen.uk" catch-all, and each subject-gated allow must be
+  # followed by a paired `deny` for the same domains -- a rule carrying a
+  # `subject:` simply does not match other users, so without the deny they
+  # fall through to the wildcard and get in anyway.
   rules:
     - domain: auth.joshowen.uk
       policy: bypass
+    # ntfy has its own auth (auth-default-access: deny-all) so phone/CLI
+    # clients can authenticate directly. See ntfy/README.md.
     - domain: ntfy.joshowen.uk
       policy: bypass
+
+    # --- Infrastructure: admins only ---
+    # dockge  = start/stop any container
+    # obsidian = code-server, effectively a shell on the box
+    # debrid   = download client
+    - domain:
+        - dockge.joshowen.uk
+        - obsidian.joshowen.uk
+        - debrid.joshowen.uk
+      policy: two_factor
+      subject: "group:admins"
+    - domain:
+        - dockge.joshowen.uk
+        - obsidian.joshowen.uk
+        - debrid.joshowen.uk
+      policy: deny
+
+    # --- Paperless: named users only ---
+    # docs.joshowen.uk uses Remote-User header auth, and Django's
+    # RemoteUserBackend auto-creates unknown users. Without this rule every
+    # Authelia user would be silently provisioned a Paperless account on first
+    # visit. To grant someone access, add them to the subject list below.
+    - domain: docs.joshowen.uk
+      policy: two_factor
+      subject:
+        - "user:josh"
+        - "user:katie"
+    - domain: docs.joshowen.uk
+      policy: deny
+
+    # --- Everything else: any authenticated user ---
     - domain: "*.joshowen.uk"
       policy: two_factor
 
