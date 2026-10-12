@@ -1,0 +1,47 @@
+services:
+  # WireGuard client: joins the home FritzBox as a peer. Runs in *client*
+  # mode by reading ./data/wg_confs/wg0.conf (exported from the FritzBox).
+  # Only the home LAN subnet should be in the peer's AllowedIPs so that the
+  # rest of this box's traffic does NOT route through home.
+  wireguard:
+    container_name: wireguard
+    image: lscr.io/linuxserver/wireguard:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    volumes:
+      - ./data:/config
+      - /lib/modules:/lib/modules:ro
+    restart: unless-stopped
+    networks:
+      - frontend
+
+  # TCP forwarder living *inside* the wireguard network namespace, so its
+  # outbound traffic exits over wg0. nginx reaches it as `wireguard:8123`
+  # (it shares the wireguard container's address on docker_proxy_network).
+  # Plain TCP carries both HTTP and the Home Assistant WebSocket.
+  ha-forward:
+    container_name: ha-forward
+    image: alpine/socat:latest
+    # Watchtower must manage this too: it shares wireguard's network
+    # namespace, so it has to be recreated whenever wireguard is.
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    network_mode: "service:wireguard"
+    command: TCP-LISTEN:8123,fork,reuseaddr TCP:${HA_LAN_IP}:8123
+    depends_on:
+      - wireguard
+    restart: unless-stopped
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true

@@ -1,0 +1,61 @@
+---
+services:
+  calibre-web-automated:
+    image: crocodilestick/calibre-web-automated:latest
+    container_name: calibre-web-automated
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=GMT
+      - NETWORK_SHARE_MODE=false
+    env_file: ".env"
+    volumes:
+      - ./data/config:/config
+      - ./data/ingest:/cwa-book-ingest
+      - ./data/calibre-library:/calibre-library
+    restart: unless-stopped
+    networks:
+      - frontend
+
+  calibre-web-automated-book-downloader:
+    image: ghcr.io/calibrain/calibre-web-automated-book-downloader:latest
+    container_name: calibre-web-automated-book-downloader
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      FLASK_PORT: 8084
+      INGEST_DIR: /cwa-book-ingest
+      LOG_LEVEL: info
+      BOOK_LANGUAGE: en
+      USE_BOOK_TITLE: true
+      TZ: Europe/London
+      APP_ENV: prod
+      UID: 1000
+      GID: 100
+      CWA_DB_PATH: /cwa-config/app.db
+      # Queue management settings
+      MAX_CONCURRENT_DOWNLOADS: 3
+      DOWNLOAD_PROGRESS_UPDATE_INTERVAL: 5
+      # Per-requester tag + send-to-kindle hook
+      CUSTOM_SCRIPT: /config/hooks/notify.py
+      CUSTOM_SCRIPT_JSON_PAYLOAD: "true"
+    env_file: ".env"
+    restart: unless-stopped
+    volumes:
+      - ./data/ingest:/cwa-book-ingest
+      - ./data/shelfmark-config:/config
+      - ./hooks:/config/hooks
+      # Mount the CWA config dir (not just app.db) so SQLite WAL files
+      # are visible — flag updates must go through the same WAL the
+      # CWA process reads from.
+      - ./data/config:/cwa-config
+      - ./data/calibre-library:/calibre-library
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true

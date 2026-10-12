@@ -1,1 +1,8 @@
 **/data
+*.env
+*.sqlite3
+**/users_database.yml
+**/users_database.yaml
+# timestamped Authelia config backups (users_database backups hold password hashes)
+nginx/config/*.bak-*
+calibre-web-automated/hooks/*.log

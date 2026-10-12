@@ -1,23 +1,64 @@
 services:
-  nginx:
-    restart: always
-    image: nginx:latest
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./default:/etc/nginx/html/default
-      - /var/log/nginx-docker:/var/log/nginx
-      - /etc/nginx/certs:/etc/nginx/certs:ro
-    networks:
-      - proxynet
+    nginx:
+        container_name: nginx
+        restart: always
+        image: nginx:latest
+        labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+        ports:
+            - 80:80
+            - 443:443
+        env_file: .env
+        command: ["nginx", "-c", "/etc/nginx/nginx.d/nginx.conf", "-g", "daemon off;"]
+        volumes:
+            - ./nginx.d:/etc/nginx/nginx.d:ro
+            - ./data/default:/etc/nginx/html/default
+            - /var/log/nginx-docker:/var/log/nginx
+            #- /etc/nginx/certs:/etc/nginx/certs:ro
+            - ./data/porkbun-certs:/etc/nginx/certs:ro
+            - ./data/certbot/conf:/etc/letsencrypt:ro
+            - ./data/certbot/www:/var/www/certbot:ro
+        networks:
+            - frontend
+
+    certbot:
+        image: certbot-local
+        container_name: certbot
+        build:
+            context: .
+            dockerfile: Dockerfile.certbot
+        restart: no
+        depends_on:
+          - nginx
+        volumes:
+            - ./data/certbot/conf:/etc/letsencrypt
+            - ./data/certbot/www:/var/www/certbot
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        command: ["renew", "--webroot", "-w", "/var/www/certbot"]
+        networks:
+            - frontend
+
+    authelia:
+        container_name: authelia
+        image: authelia/authelia
+        restart: unless-stopped
+        labels:
+            - "com.centurylinklabs.watchtower.enable=true"
+        volumes:
+            - ./config:/config
+            - ./data/authelia/secrets:/secrets
+            - /var/log/authelia:/var/log/authelia
+        env_file: .env
+        environment:
+            TZ: 'Europe/London'
+            AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /secrets/JWT_SECRET
+            AUTHELIA_SESSION_SECRET_FILE: /secrets/SESSION_SECRET
+            AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/STORAGE_ENCRYPTION_KEY
+            AUTHELIA_NOTIFIER_SMTP_PASSWORD: ${GMX_APP_PASSWORD}
+        networks:
+            - frontend
 
 networks:
-  proxynet:
-    name: docker_proxy_network
-    driver: bridge
-      #driver_opts:
-      #com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+    frontend:
+        name: docker_proxy_network
+        external: true

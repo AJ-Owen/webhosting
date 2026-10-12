@@ -1,0 +1,96 @@
+services:
+  broker:
+    image: docker.io/library/redis:8
+    restart: unless-stopped
+    volumes:
+      - ./data/redis-data:/data
+    networks:
+      - paperless-internal
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+          cpus: "0.5"
+  db:
+    image: docker.io/library/postgres:17
+    restart: unless-stopped
+    volumes:
+      - ./data/postgres-data/pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless
+    networks:
+      - paperless-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "1.0"
+  webserver:
+    container_name: paperless
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    depends_on:
+      - db
+      - broker
+      - gotenberg
+      - tika
+    volumes:
+      - ./data/paperless-data/data:/usr/src/paperless/data
+      - ./data/paperless-data/media:/usr/src/paperless/media
+      - ./data/paperless-data/export:/usr/src/paperless/export
+      - ./data/paperless-data/consume:/usr/src/paperless/consume
+    env_file: docker-compose.env
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+      PAPERLESS_URL: https://docs.joshowen.uk
+      PAPERLESS_ALLOWED_HOSTS: joshowen.uk
+    networks:
+      - frontend
+      - paperless-internal
+    deploy:
+      resources:
+        limits:
+          memory: 1536m
+          cpus: "2.0"
+  gotenberg:
+    image: docker.io/gotenberg/gotenberg:8.20
+    restart: unless-stopped
+    # The gotenberg chromium route is used to convert .eml files. We do not
+    # want to allow external content like tracking pixels or even javascript.
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    networks:
+      - paperless-internal
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+          cpus: "1.0"
+  tika:
+    image: docker.io/apache/tika:latest
+    restart: unless-stopped
+    networks:
+      - paperless-internal
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "1.0"
+
+networks:
+  frontend:
+    name: docker_proxy_network
+    external: true
+  paperless-internal:
+    name: paperless_internal_network
+    driver: bridge

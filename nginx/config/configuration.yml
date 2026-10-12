@@ -1,0 +1,111 @@
+---
+theme: dark
+
+server:
+  address: tcp://0.0.0.0:9091
+
+log:
+  level: info
+  format: json
+  file_path: /var/log/authelia/authelia.log
+  keep_stdout: true
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+    search:
+      email: true             # allow login/reset via email address
+      case_insensitive: true  # accept Katie, KATIE, katie equally
+
+access_control:
+  default_policy: deny
+  # Rules are FIRST MATCH WINS. Anything scoped to specific people must appear
+  # ABOVE the "*.joshowen.uk" catch-all, and each subject-gated allow must be
+  # followed by a paired `deny` for the same domains -- a rule carrying a
+  # `subject:` simply does not match other users, so without the deny they
+  # fall through to the wildcard and get in anyway.
+  rules:
+    - domain: auth.joshowen.uk
+      policy: bypass
+    # ntfy has its own auth (auth-default-access: deny-all) so phone/CLI
+    # clients can authenticate directly. See ntfy/README.md.
+    - domain: ntfy.joshowen.uk
+      policy: bypass
+
+    # --- Infrastructure: admins only ---
+    # dockge  = start/stop any container
+    # obsidian = code-server, effectively a shell on the box
+    # debrid   = download client
+    - domain:
+        - dockge.joshowen.uk
+        - obsidian.joshowen.uk
+        - debrid.joshowen.uk
+      policy: two_factor
+      subject: "group:admins"
+    - domain:
+        - dockge.joshowen.uk
+        - obsidian.joshowen.uk
+        - debrid.joshowen.uk
+      policy: deny
+
+    # --- Paperless: named users only ---
+    # docs.joshowen.uk uses Remote-User header auth, and Django's
+    # RemoteUserBackend auto-creates unknown users. Without this rule every
+    # Authelia user would be silently provisioned a Paperless account on first
+    # visit. To grant someone access, add them to the subject list below.
+    - domain: docs.joshowen.uk
+      policy: two_factor
+      subject:
+        - "user:josh"
+        - "user:katie"
+    - domain: docs.joshowen.uk
+      policy: deny
+
+    # --- Everything else: any authenticated user ---
+    - domain: "*.joshowen.uk"
+      policy: two_factor
+
+totp:
+  issuer: 'joshowen.uk'
+  algorithm: 'sha256'
+  digits: 6
+  period: 30
+  skew: 1
+  secret_size: 32
+  allowed_algorithms:
+    - 'SHA256'
+  allowed_digits:
+    - 6
+  allowed_periods:
+    - 30
+  disable_reuse_security_policy: false
+
+session:
+  name: authelia_session
+  expiration: 12h
+  inactivity: 90m
+  cookies:
+    - domain: joshowen.uk
+      authelia_url: https://auth.joshowen.uk
+      name: authelia_session
+
+regulation:
+  max_retries: 3
+  find_time: 2m
+  ban_time: 60m
+
+storage:
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  smtp:
+    address: mail.gmx.com:587
+    sender: "Authelia <cal.libre@gmx.com>"
+    username: cal.libre@gmx.com
+    # password is set via AUTHELIA_NOTIFIER_SMTP_PASSWORD env var in docker-compose.yml
+    disable_require_tls: false
+
+# jwt_secret is loaded from /secrets/JWT_SECRET via
+# AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE env var
+# (see docker-compose.yml)

@@ -1,10 +1,17 @@
 services:
   watchtower:
-    image: ghcr.io/containrrr/watchtower
+    image: nickfedor/watchtower:latest
     restart: unless-stopped
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --cleanup --label-enable --interval 60
+      - /home/josh/.docker/config.json:/config.json:ro
+    command: --cleanup --label-enable --interval 3600
+    env_file: .env
     environment:
       - TZ=Europe/London
+      - WATCHTOWER_NOTIFICATION_SKIP_TITLE=True
+      - WATCHTOWER_WARN_ON_HEAD_FAILURE=never
+      #- WATCHTOWER_RUN_ONCE=True
+      - WATCHTOWER_NO_STARTUP_MESSAGE=True
+      - WATCHTOWER_NOTIFICATION_LOG_STDOUT=True

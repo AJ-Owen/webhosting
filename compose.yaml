@@ -1,0 +1,26 @@
+name: apps
+
+include:
+  - nginx/docker-compose.yml
+  - watchtower/docker-compose.yaml
+  - ntfy/docker-compose.yml
+  - beszel/docker-compose.yml
+  - dockge/docker-compose.yaml
+  - uptime-kuma/docker-compose.yaml
+  - path: wireguard/docker-compose.yaml
+    env_file: wireguard/.env
+
+  - actual-budget/docker-compose.yaml
+  - calibre-web-automated/docker-compose.yaml
+  - paperless/docker-compose.yaml
+  #- n8n/docker-compose.yaml
+
+  - activepetz/docker-compose.yaml
+  #- debrid/docker-compose.yaml
+  - factorio/docker-compose.yaml
+  - it-tools/docker-compose.yaml
+  - stirling-tools/docker-compose.yml
+
+networks:
+  docker_proxy_network:
+    name: docker_proxy_network
