@@ -1,0 +1,4 @@
+# Copy to home_allow.conf (gitignored) and set the home network's public IP.
+# Included by locations that should only be reachable from home, e.g. the
+# Beszel agent endpoints in nginx.conf.
+allow 203.0.113.10;

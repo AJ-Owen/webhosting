@@ -6,3 +6,5 @@
 # timestamped Authelia config backups (users_database backups hold password hashes)
 nginx/config/*.bak-*
 calibre-web-automated/hooks/*.log
+# per-host nginx allowlist (holds the home public IP) -- see *.conf.example
+nginx/nginx.d/snippets/home_allow.conf
